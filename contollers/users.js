@@ -27,7 +27,7 @@ module.exports.findUser = (req, res, next) => {
     })
     .catch((err) => {
       console.log(err.name);
-      if (err.name === 'Error') {
+      if (err.name === 'CastError') {
         res.status(400).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении профиля.` });
       } else {
         res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
@@ -51,7 +51,7 @@ module.exports.updateProfile = (req, res) => {
     { name, about },
     { new: true, runValidators: true, setDefaultsOnInsert: true },
   )
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       if (err.name === 'Error') {
         res.status(404).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении профиля.` });
@@ -67,7 +67,7 @@ module.exports.updateAvatar = (req, res) => {
   const userID = req.user._id;
   const { avatar } = req.body;
   User.findByIdAndUpdate({ userID, $set: { avatar } })
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       if (err.name === 'Error') {
         res.status(404).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении аватара.` });
