@@ -19,7 +19,7 @@ module.exports.createCard = (req, res) => {
 
 module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params._id)
-    .orFail(() => next(res.status(404).send({ message: `Произошла ошибка. Переданы некорректные данные.` })))
+    .orFail(() => next(res.status(404).send({ message: 'Произошла ошибка. Переданы некорректные данные.' })))
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -42,7 +42,7 @@ module.exports.likeCard = (req, res, next) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(() => next(res.status(404).send({ message: `Произошла ошибка. Переданы некорректные данные.` })))
+    .orFail(() => next(res.status(404).send({ message: 'Произошла ошибка. Переданы некорректные данные.' })))
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -59,7 +59,7 @@ module.exports.dislikeCard = (req, res, next) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
-    .orFail(() => next(res.status(404).send({ message: `Произошла ошибка. Переданы некорректные данные.` })))
+    .orFail(() => next(res.status(404).send({ message: 'Произошла ошибка. Переданы некорректные данные.' })))
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
