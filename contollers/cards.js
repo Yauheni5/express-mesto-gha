@@ -17,12 +17,13 @@ module.exports.createCard = (req, res) => {
     });
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params._id)
+    .orFail(() => next(res.status(404).send({ message: `Произошла ошибка. Переданы некорректные данные.` })))
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(404).send({ message: `Произошла ошибка: ${err.name}. Карточка с такими данными не найдена` });
+        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Карточка с такими данными не найдена` });
       } else {
         res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
       }
