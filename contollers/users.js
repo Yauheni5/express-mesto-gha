@@ -65,13 +65,17 @@ module.exports.updateProfile = (req, res) => {
 module.exports.updateAvatar = (req, res) => {
   const userID = req.user._id;
   const { avatar } = req.body;
-  User.findByIdAndUpdate({ userID, $set: { avatar } })
+  User.findByIdAndUpdate(
+    userID,
+    { avatar },
+    { new: true, runValidators: true, setDefaultsOnInsert: true },
+  )
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
-      if (err.name === 'Error') {
-        res.status(404).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении аватара.` });
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении профиля.` });
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
+        res.status(404).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
       } else {
         res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
       }
