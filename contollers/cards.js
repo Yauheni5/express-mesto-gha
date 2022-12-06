@@ -35,36 +35,34 @@ module.exports.getCards = (req, res) => {
     .catch((err) => res.status(500).send({ message: `Произошла ошибка: ${err.name}` }));
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params._id,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(() => next(res.status(404).send({ message: `Произошла ошибка. Переданы некорректные данные.` })))
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные.` });
-      } else if (err.name === 'ValidationError') {
-        res.status(404).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
+        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
       } else {
         res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
       }
     });
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params._id,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
+    .orFail(() => next(res.status(404).send({ message: `Произошла ошибка. Переданы некорректные данные.` })))
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные.` });
-      } else if (err.name === 'ValidationError') {
-        res.status(404).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
+        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
       } else {
         res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
       }
