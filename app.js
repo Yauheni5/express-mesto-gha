@@ -21,6 +21,7 @@ app.use(express.json());
 app.use('/users', usersRoutes);
 app.use('/cards', cardsRoutes);
 
+app.all('/*', (req, res) => res.send({ message: 'Данной страницы не существует!' }));
 app.listen(PORT, () => {
   // Если всё работает, консоль покажет, какой порт приложение слушает
   console.log(`App listening on port ${PORT}`);
