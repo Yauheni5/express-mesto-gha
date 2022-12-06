@@ -26,7 +26,6 @@ module.exports.findUser = (req, res, next) => {
       next();
     })
     .catch((err) => {
-      console.log(err.name);
       if (err.name === 'CastError') {
         res.status(400).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении профиля.` });
       } else {
@@ -53,10 +52,10 @@ module.exports.updateProfile = (req, res) => {
   )
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
-      if (err.name === 'Error') {
-        res.status(404).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении профиля.` });
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении профиля.` });
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
+        res.status(404).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
       } else {
         res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
       }
