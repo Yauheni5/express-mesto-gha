@@ -33,7 +33,7 @@ module.exports.findUser = (req, res) => {
 
 module.exports.getUsers = (req, res) => {
   User.find({})
-    .then((user) => res.status(200).send({ data: user, message: 'Зарегистрированные пользователи' }))
+    .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
     });
