@@ -16,15 +16,19 @@ module.exports.createUser = (req, res) => {
     });
 };
 
-module.exports.findUser = (req, res) => {
+module.exports.findUser = (req, res, next) => {
   User.findById(req.params._id)
-    .then((user) => res.status(200).send({ data: user, message: 'Пользователь найден' }))
+    .orFail(() => res.status(404).send({ message: 'Произошла ошибка. Пользователь с указанным _id не найден.' }))
+    .then((user) => {
+      if (user) {
+        res.status(200).send({ data: user });
+      }
+      next();
+    })
     .catch((err) => {
       console.log(err.name);
       if (err.name === 'Error') {
-        res.status(404).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении профиля.` });
-      } else if (err.name === 'CastError') {
-        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
+        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении профиля.` });
       } else {
         res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
       }
@@ -47,7 +51,7 @@ module.exports.updateProfile = (req, res) => {
     { name, about },
     { new: true, runValidators: true, setDefaultsOnInsert: true },
   )
-    .then((user) => res.send({ data: user, message: 'Профиль обновлён' }))
+    .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'Error') {
         res.status(404).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении профиля.` });
@@ -63,7 +67,7 @@ module.exports.updateAvatar = (req, res) => {
   const userID = req.user._id;
   const { avatar } = req.body;
   User.findByIdAndUpdate({ userID, $set: { avatar } })
-    .then((user) => res.send({ data: user, message: 'Аватар пользователя обновлён' }))
+    .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'Error') {
         res.status(404).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении аватара.` });
