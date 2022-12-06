@@ -44,9 +44,9 @@ module.exports.likeCard = (req, res) => {
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(404).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные.` });
+        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные.` });
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
+        res.status(404).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
       } else {
         res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
       }
@@ -55,16 +55,16 @@ module.exports.likeCard = (req, res) => {
 
 module.exports.dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
-    req.params.cardId,
+    req.params._id,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(404).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные.` });
+        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные.` });
       } else if (err.name === 'CastError') {
-        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
+        res.status(404).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
       } else {
         res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
       }
