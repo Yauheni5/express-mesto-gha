@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const usersRoutes = require('./routes/user');
-const cardsRoutes = require('./routes/card');
+const usersRoutes = require('./routes/users');
+const cardsRoutes = require('./routes/cards');
 
 const { PORT = 3000 } = process.env;
 
@@ -14,10 +14,6 @@ app.use((req, res, next) => {
 
   next();
 });
-
-/* module.exports.createCard = (req, res) => {
-  console.log(req.user._id); // _id станет доступен
-}; */
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
 app.use(express.json());

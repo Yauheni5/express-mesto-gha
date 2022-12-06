@@ -6,7 +6,7 @@ const {
   findUser,
   updateProfile,
   updateAvatar,
-} = require('../contollers/user');
+} = require('../contollers/users');
 
 usersRoutes.get('/', getUsers);
 

@@ -6,7 +6,7 @@ const {
   deleteCard,
   likeCard,
   dislikeCard,
-} = require('../contollers/card');
+} = require('../contollers/cards');
 
 cardsRoutes.get('/', getCards);
 
