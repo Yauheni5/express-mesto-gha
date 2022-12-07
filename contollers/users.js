@@ -16,7 +16,6 @@ const errorHandler = (err, res) => {
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
-    .orFail()
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       errorHandler(err, res);
@@ -25,7 +24,6 @@ module.exports.createUser = (req, res) => {
 
 module.exports.findUser = (req, res, next) => {
   User.findById(req.params._id)
-    .orFail()
     .then((user) => {
       if (user) {
         res.status(200).send({ data: user });
@@ -39,7 +37,6 @@ module.exports.findUser = (req, res, next) => {
 
 module.exports.getUsers = (req, res) => {
   User.find({})
-    .orFail()
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       errorHandler(err, res);
@@ -54,7 +51,6 @@ module.exports.updateProfile = (req, res) => {
     { name, about },
     { new: true, runValidators: true },
   )
-    .orFail()
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       errorHandler(err, res);
@@ -69,7 +65,6 @@ module.exports.updateAvatar = (req, res) => {
     { avatar },
     { new: true, runValidators: true },
   )
-    .orFail()
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       errorHandler(err, res);
