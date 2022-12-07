@@ -21,9 +21,14 @@ module.exports.createCard = (req, res) => {
     .catch((err) => errorHandler(err, res));
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params._id)
-    .then((card) => res.status(200).send({ data: card }))
+    .then((card) => {
+      if (card) {
+        res.status(200).send({ data: card });
+      }
+      next();
+    })
     .catch((err) => errorHandler(err, res));
 };
 
