@@ -2,23 +2,21 @@
 // файл контроллеров
 
 const User = require('../models/User');
+const errorHandler = require('../errors/errors');
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
+    .orFail()
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные` });
-      } else {
-        res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
-      }
+      errorHandler(err, res);
     });
 };
 
 module.exports.findUser = (req, res, next) => {
   User.findById(req.params._id)
-    .orFail(() => res.status(404).send({ message: 'Произошла ошибка. Пользователь с указанным _id не найден.' }))
+    .orFail()
     .then((user) => {
       if (user) {
         res.status(200).send({ data: user });
@@ -26,19 +24,16 @@ module.exports.findUser = (req, res, next) => {
       next();
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении профиля.` });
-      } else {
-        res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
-      }
+      errorHandler(err, res);
     });
 };
 
 module.exports.getUsers = (req, res) => {
   User.find({})
+    .orFail()
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
-      res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
+      errorHandler(err, res);
     });
 };
 
@@ -48,17 +43,12 @@ module.exports.updateProfile = (req, res) => {
   User.findByIdAndUpdate(
     userID,
     { name, about },
-    { new: true, runValidators: true, setDefaultsOnInsert: true },
+    { new: true, runValidators: true },
   )
+    .orFail()
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении профиля.` });
-      } else if (err.name === 'CastError') {
-        res.status(404).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
-      } else {
-        res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
-      }
+      errorHandler(err, res);
     });
 };
 
@@ -68,16 +58,11 @@ module.exports.updateAvatar = (req, res) => {
   User.findByIdAndUpdate(
     userID,
     { avatar },
-    { new: true, runValidators: true, setDefaultsOnInsert: true },
+    { new: true, runValidators: true },
   )
+    .orFail()
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: `Произошла ошибка: ${err.name}. Переданы некорректные данные при обновлении профиля.` });
-      } else if (err.name === 'CastError') {
-        res.status(404).send({ message: `Произошла ошибка: ${err.name}. Пользователь с указанным _id не найден.` });
-      } else {
-        res.status(500).send({ message: `Произошла ошибка: ${err.name}` });
-      }
+      errorHandler(err, res);
     });
 };
