@@ -17,9 +17,7 @@ module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .catch((err) => errorHandler(err, res));
 };
 
 module.exports.findUser = (req, res, next) => {
@@ -30,17 +28,13 @@ module.exports.findUser = (req, res, next) => {
       }
       next();
     })
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .catch((err) => errorHandler(err, res));
 };
 
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .catch((err) => errorHandler(err, res));
 };
 
 module.exports.updateProfile = (req, res) => {
@@ -52,9 +46,7 @@ module.exports.updateProfile = (req, res) => {
     { new: true, runValidators: true },
   )
     .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .catch((err) => errorHandler(err, res));
 };
 
 module.exports.updateAvatar = (req, res) => {
@@ -66,7 +58,5 @@ module.exports.updateAvatar = (req, res) => {
     { new: true, runValidators: true },
   )
     .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .catch((err) => errorHandler(err, res));
 };

@@ -18,17 +18,13 @@ module.exports.createCard = (req, res) => {
     .then((card) => {
       res.status(200).send({ data: card });
     })
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .catch((err) => errorHandler(err, res));
 };
 
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params._id)
     .then((card) => res.status(200).send({ data: card }))
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .catch((err) => errorHandler(err, res));
 };
 
 module.exports.getCards = (req, res) => {
@@ -37,26 +33,32 @@ module.exports.getCards = (req, res) => {
     .catch((err) => errorHandler(err, res));
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params._id,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .then((card) => res.status(200).send({ data: card }))
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .then((card) => {
+      if (card) {
+        res.status(200).send({ data: card });
+      }
+      next();
+    })
+    .catch((err) => errorHandler(err, res));
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params._id,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
-    .then((card) => res.status(200).send({ data: card }))
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .then((card) => {
+      if (card) {
+        res.status(200).send({ data: card });
+      }
+      next();
+    })
+    .catch((err) => errorHandler(err, res));
 };
