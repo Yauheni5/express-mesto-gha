@@ -8,7 +8,7 @@ module.exports.createUser = (req, res) => {
   User.create({ name, about, avatar })
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
-      if (err.name === 'CastError' || 'ValidationError') {
+      if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Переданы некорректные данные в метод' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
@@ -28,7 +28,7 @@ module.exports.findUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
         next(res.status(404).send({ message: 'Пользователь по переданному Id не найден' }));
-      } else if (err.name === 'CastError' || 'ValidationError') {
+      } else if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные в метод' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
@@ -39,13 +39,7 @@ module.exports.findUser = (req, res, next) => {
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные в метод' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.updateProfile = (req, res, next) => {

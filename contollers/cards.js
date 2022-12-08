@@ -40,13 +40,7 @@ module.exports.deleteCard = (req, res, next) => {
 module.exports.getCards = (req, res) => {
   Card.find({})
     .then((card) => res.status(200).send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные в метод' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
 
 module.exports.likeCard = (req, res, next) => {
