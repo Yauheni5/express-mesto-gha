@@ -19,7 +19,7 @@ app.post('/signin', celebrate({
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().uri(),
+    avatar: Joi.string().dataUri(),
   }),
 }), login);
 app.post('/signup', celebrate({
@@ -28,7 +28,7 @@ app.post('/signup', celebrate({
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().uri(),
+    avatar: Joi.string().dataUri(),
   }),
 }), createUser);
 
