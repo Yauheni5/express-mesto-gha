@@ -14,14 +14,14 @@ module.exports.createUser = async (req, res, next) => {
       email, password, name, about, avatar,
     } = req.body;
     const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({
+    await User.create({
       email,
       password: hash,
       name,
       about,
       avatar,
     });
-    res.status(201).send({ data: user });
+    res.status(201).send({ message: 'Пользователь успешно зарегистрирован' });
   } catch (err) {
     if (err.code === 11000) {
       next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
