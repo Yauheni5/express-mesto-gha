@@ -2,15 +2,15 @@ const usersRoutes = require('express').Router();
 
 const {
   getUsers,
-  createUser,
   findUser,
   updateProfile,
   updateAvatar,
+  getUserInfo,
 } = require('../contollers/users');
 
 usersRoutes.get('/', getUsers);
 
-usersRoutes.post('/', createUser);
+usersRoutes.get('/me', getUserInfo);
 
 usersRoutes.get('/:_id', findUser);
 

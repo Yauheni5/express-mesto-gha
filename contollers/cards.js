@@ -1,3 +1,6 @@
+const GeneralError = require('../errors/general-err');
+const NotFoundError = require('../errors/not-found-err');
+const ValidationError = require('../errors/validation-err');
 const Card = require('../models/Card');
 
 module.exports.createCard = (req, res) => {
@@ -10,30 +13,30 @@ module.exports.createCard = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные в метод создания карточки' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        throw new ValidationError({ message: 'Переданы некорректные данные в метод создания карточки' });
       }
+      throw new GeneralError({ message: 'Произошла ошибка' });
     });
 };
 
-module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params._id)
+module.exports.deleteCard = async (req, res, next) => {
+  const userId = req.user._id;
+  Card.findById(req.params._id)
     .orFail()
     .then((card) => {
-      if (card) {
-        res.status(200).send({ data: card });
+      if (card.owner.toString() === userId) {
+        Card.findByIdAndRemove(req.params._id);
+        return res.status(200).send({ message: `Карточка ${card.name} удалена` });
       }
-      next();
+      return next(res.status(409).send({ message: 'К этой карточке у вас нет доступа на удаление' }));
     })
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        next(res.status(404).send({ message: 'Карточка по переданному Id не найдена' }));
-      } else if (err.name === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные в метод' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        return new NotFoundError({ message: 'Карточка по переданному Id не найдена' });
+      } if (err.name === 'CastError' || 'ValidationError') {
+        return new ValidationError({ message: 'Переданы некорректные данные в метод' });
       }
+      return new GeneralError({ message: 'Произошла ошибка' });
     });
 };
 
@@ -54,15 +57,16 @@ module.exports.likeCard = (req, res, next) => {
       if (card) {
         res.status(200).send({ data: card });
       }
+      next();
     })
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        next(res.status(404).send({ message: 'Данные по переданному Id не найдены' }));
-      } else if (err.name === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные для постановки лайка' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        return new NotFoundError({ message: 'Карточка по переданному Id не найдена' });
       }
+      if (err.name === 'CastError' || 'ValidationError') {
+        return new ValidationError({ message: 'Переданы некорректные данные в метод' });
+      }
+      return new GeneralError({ message: 'Произошла ошибка' });
     });
 };
 
@@ -77,14 +81,15 @@ module.exports.dislikeCard = (req, res, next) => {
       if (card) {
         res.status(200).send({ data: card });
       }
+      next();
     })
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        next(res.status(404).send({ message: 'Данные по переданному Id не найдены' }));
-      } else if (err.name === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные для снятия лайка' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        return new NotFoundError({ message: 'Карточка по переданному Id не найдена' });
       }
+      if (err.name === 'CastError' || 'ValidationError') {
+        return new ValidationError({ message: 'Переданы некорректные данные в метод' });
+      }
+      return new GeneralError({ message: 'Произошла ошибка' });
     });
 };

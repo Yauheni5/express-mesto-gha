@@ -1,19 +1,73 @@
 // controllers/users.js
 // файл контроллеров
-
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const ConflictError = require('../errors/conflict-err');
+const GeneralError = require('../errors/general-err');
+const NotFoundError = require('../errors/not-found-err');
+const ValidationError = require('../errors/validation-err');
 const User = require('../models/User');
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
-    .then((user) => res.status(200).send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные в метод' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
-      }
+/* if (err.name === 'DocumentNotFoundError') {
+  return new NotFoundError({ message: 'Карточка по переданному Id не найдена' });
+} if (err.name === 'CastError' || 'ValidationError') {
+  return new ValidationError({ message: 'Переданы некорректные данные в метод' });
+}
+return new GeneralError({ message: 'Произошла ошибка' }); */
+
+module.exports.createUser = async (req, res) => {
+  const {
+    email, password, name, about, avatar,
+  } = req.body;
+
+  try {
+    const hash = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      email,
+      password: hash,
+      name,
+      about,
+      avatar,
     });
+    return res.status(201).send({ data: user });
+  } catch (err) {
+    if (err.code === 11000) {
+      return new ConflictError({ message: 'Пользователь с таким email уже зарегистрирован' });
+    } if (err.name === 'ValidationError') {
+      return new ValidationError({ message: 'Переданы некорректные данные в метод' });
+    }
+    return new GeneralError({ message: 'Произошла ошибка' });
+  }
+};
+
+module.exports.login = async (req, res, next) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findUserByCredentials(email, password);
+    if (!user) {
+      next(new Error('Неправильный логин или пароль'));
+    }
+    const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
+    return res.status(200).send({ token });
+  } catch (err) {
+    if (err) {
+      return res.status(401).send({ message: err.message });
+    }
+    return new GeneralError({ message: 'Произошла ошибка' });
+  }
+};
+
+module.exports.getUserInfo = async (req, res) => {
+  const userId = req.user._id;
+  try {
+    const user = await User.findById(userId);
+    return res.status(200).send({ data: user });
+  } catch (err) {
+    if (err.name) {
+      return new NotFoundError({ message: 'Пользователь не найден' });
+    }
+    return new GeneralError({ message: 'Произошла ошибка' });
+  }
 };
 
 module.exports.findUser = (req, res, next) => {
@@ -27,19 +81,19 @@ module.exports.findUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        next(res.status(404).send({ message: 'Пользователь по переданному Id не найден' }));
-      } else if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные в метод' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        return new NotFoundError({ message: 'Пользователь по переданному Id не найден' });
       }
+      if (err.name === 'CastError') {
+        return new ValidationError({ message: 'Переданы некорректные данные в метод' });
+      }
+      return new GeneralError({ message: 'Произошла ошибка' });
     });
 };
 
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((user) => res.status(200).send({ data: user }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(() => new GeneralError({ message: 'Произошла ошибка' }));
 };
 
 module.exports.updateProfile = (req, res, next) => {
@@ -59,12 +113,12 @@ module.exports.updateProfile = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        next(res.status(404).send({ message: 'Пользователь по переданному Id не найден' }));
-      } else if (err.name === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные в метод обновления профиля' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        return new NotFoundError({ message: 'Пользователь по переданному Id не найден' });
       }
+      if (err.name === 'CastError' || 'ValidationError') {
+        return new ValidationError({ message: 'Переданы некорректные данные в метод обновления аватара' });
+      }
+      return new GeneralError({ message: 'Произошла ошибка' });
     });
 };
 
@@ -85,11 +139,11 @@ module.exports.updateAvatar = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        next(res.status(404).send({ message: 'Пользователь по переданному Id не найден' }));
-      } else if (err.name === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные в метод обновления аватара' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        return new NotFoundError({ message: 'Пользователь по переданному Id не найден' });
       }
+      if (err.name === 'CastError' || 'ValidationError') {
+        return new ValidationError({ message: 'Переданы некорректные данные в метод обновления аватара' });
+      }
+      return new GeneralError({ message: 'Произошла ошибка' });
     });
 };
