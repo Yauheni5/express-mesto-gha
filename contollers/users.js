@@ -15,14 +15,14 @@ module.exports.createUser = async (req, res, next) => {
       email, password, name, about, avatar,
     } = req.body;
     const hash = await bcrypt.hash(password, 10);
-    await User.create({
+    const user = await User.create({
       email,
       password: hash,
       name,
       about,
       avatar,
     });
-    return res.status(201).send({ data: `email: ${email}, name: ${name}, about: ${about}, avatar: ${avatar}` });
+    return res.status(201).send({ data: `email: ${user.email}, name: ${user.name}, about: ${user.about}, avatar: ${user.avatar}` });
   } catch (err) {
     if (err.code === '11000') {
       return next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
@@ -105,7 +105,7 @@ module.exports.updateAvatar = async (req, res, next) => {
   try {
     const userID = req.user._id;
     const { avatar } = req.body;
-    const user = User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
       userID,
       { avatar },
       { new: true, runValidators: true },
