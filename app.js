@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { errors } = require('celebrate');
 const usersRoutes = require('./routes/users');
 const cardsRoutes = require('./routes/cards');
 const { login, createUser } = require('./contollers/users');
@@ -23,6 +24,8 @@ app.use((err, req, res) => {
 });
 
 app.all('/*', (req, res) => res.status(404).send({ message: 'Данной страницы не существует!' }));
+app.use(errors());
+
 app.listen(PORT, () => {
   // Если всё работает, консоль покажет, какой порт приложение слушает
   console.log(`App listening on port ${PORT}`);
