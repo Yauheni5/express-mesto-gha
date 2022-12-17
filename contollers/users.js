@@ -22,14 +22,14 @@ module.exports.createUser = async (req, res, next) => {
       about,
       avatar,
     });
-    res.status(201).send({ data: `email: ${email}, name: ${name}, about: ${about}, avatar: ${avatar}` });
+    return res.status(201).send({ data: `email: ${email}, name: ${name}, about: ${about}, avatar: ${avatar}` });
   } catch (err) {
     if (err.code === '11000') {
-      next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
+      return next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
     } if (err.name === 'ValidationError') {
-      next(new ValidationError('Переданы некорректные данные в метод'));
+      return next(new ValidationError('Переданы некорректные данные в метод'));
     }
-    next(new GeneralError('Произошла ошибка'));
+    return next(new GeneralError('Произошла ошибка'));
   }
 };
 
@@ -38,48 +38,45 @@ module.exports.login = async (req, res, next) => {
     const { email, password } = req.body;
     const user = await User.findUserByCredentials(email, password);
     const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
-    res.status(200).send({ token });
+    return res.status(200).send({ token });
   } catch (err) {
-    next(new AuthError('Неправильные почта или пароль'));
+    return next(new AuthError('Неправильные почта или пароль'));
   }
 };
 
 module.exports.getUserInfo = async (req, res, next) => {
   try {
     const user = await User.findOne({ _id: req.user._id });
-    res.status(200).send({ data: user });
+    return res.status(200).send({ data: user });
   } catch (err) {
     if (err.name === 'CastError') {
-      next(new NotFoundError('Переданы некорректные данные в метод'));
+      return next(new NotFoundError('Переданы некорректные данные в метод'));
     }
-    next(new GeneralError('Произошла ошибка'));
+    return next(new GeneralError('Произошла ошибка'));
   }
 };
 
 module.exports.findUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params._id);
-    if (user) {
-      res.status(200).send({ data: user });
-    }
-    next();
+    return res.status(200).send({ data: user });
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
-      next(new NotFoundError({ message: 'Пользователь по переданному Id не найден' }));
+      return next(new NotFoundError({ message: 'Пользователь по переданному Id не найден' }));
     }
     if (err.name === 'CastError') {
-      next(new ValidationError({ message: 'Переданы некорректные данные в метод' }));
+      return next(new ValidationError({ message: 'Переданы некорректные данные в метод' }));
     }
-    next(new GeneralError({ message: 'Произошла ошибка' }));
+    return next(new GeneralError({ message: 'Произошла ошибка' }));
   }
 };
 
 module.exports.getUsers = async (req, res, next) => {
   try {
     const user = await User.find({});
-    res.status(200).send({ data: user });
+    return res.status(200).send({ data: user });
   } catch (err) {
-    next(new GeneralError('Произошла ошибка'));
+    return next(new GeneralError('Произошла ошибка'));
   }
 };
 
@@ -92,18 +89,15 @@ module.exports.updateProfile = async (req, res, next) => {
       { name, about },
       { new: true, runValidators: true },
     );
-    if (user) {
-      res.status(200).send({ data: user });
-    }
-    next();
+    return res.status(200).send({ data: user });
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
-      next(new NotFoundError('Пользователь по переданному Id не найден'));
+      return next(new NotFoundError('Пользователь по переданному Id не найден'));
     }
     if (err.name === 'CastError' || 'ValidationError') {
-      next(new ValidationError('Переданы некорректные данные в метод обновления аватара'));
+      return next(new ValidationError('Переданы некорректные данные в метод обновления аватара'));
     }
-    next(new GeneralError('Произошла ошибка'));
+    return next(new GeneralError('Произошла ошибка'));
   }
 };
 
@@ -116,17 +110,14 @@ module.exports.updateAvatar = async (req, res, next) => {
       { avatar },
       { new: true, runValidators: true },
     );
-    if (user) {
-      res.status(200).send({ data: user });
-    }
-    next();
+    return res.status(200).send({ data: user });
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
-      next(new NotFoundError('Пользователь по переданному Id не найден'));
+      return next(new NotFoundError('Пользователь по переданному Id не найден'));
     }
     if (err.name === 'CastError' || 'ValidationError') {
-      next(new ValidationError('Переданы некорректные данные в метод обновления аватара'));
+      return next(new ValidationError('Переданы некорректные данные в метод обновления аватара'));
     }
-    next(new GeneralError('Произошла ошибка'));
+    return next(new GeneralError('Произошла ошибка'));
   }
 };

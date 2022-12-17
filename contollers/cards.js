@@ -9,12 +9,12 @@ module.exports.createCard = async (req, res, next) => {
     const ownerId = req.user._id;
     const { name, link } = req.body;
     const card = await Card.create({ name, link, owner: ownerId });
-    res.status(200).send({ data: card });
+    return res.status(200).send({ data: card });
   } catch (err) {
     if (err.name === 'CastError' || 'ValidationError') {
-      next(new ValidationError({ message: 'Переданы некорректные данные в метод создания карточки' }));
+      return next(new ValidationError({ message: 'Переданы некорректные данные в метод создания карточки' }));
     }
-    next(new GeneralError({ message: 'Произошла ошибка' }));
+    return next(new GeneralError({ message: 'Произошла ошибка' }));
   }
 };
 
@@ -40,9 +40,9 @@ module.exports.deleteCard = async (req, res, next) => {
 module.exports.getCards = async (req, res, next) => {
   try {
     const card = await Card.find({});
-    res.status(200).send({ data: card });
+    return res.status(200).send({ data: card });
   } catch (err) {
-    next(new GeneralError('Произошла ошибка'));
+    return next(new GeneralError('Произошла ошибка'));
   }
 };
 
@@ -53,18 +53,15 @@ module.exports.likeCard = async (req, res, next) => {
       { $addToSet: { likes: req.user._id } },
       { new: true },
     );
-    if (!card) {
-      next();
-    }
-    res.status(200).send({ data: card });
+    return res.status(200).send({ data: card });
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
-      next(new NotFoundError('Карточка по переданному Id не найдена'));
+      return next(new NotFoundError('Карточка по переданному Id не найдена'));
     }
     if (err.name === 'CastError' || 'ValidationError') {
-      next(new ValidationError('Переданы некорректные данные в метод'));
+      return next(new ValidationError('Переданы некорректные данные в метод'));
     }
-    next(new GeneralError('Произошла ошибка'));
+    return next(new GeneralError('Произошла ошибка'));
   }
 };
 
@@ -75,17 +72,14 @@ module.exports.dislikeCard = async (req, res, next) => {
       { $pull: { likes: req.user._id } }, // убрать _id из массива
       { new: true },
     );
-    if (!card) {
-      next();
-    }
-    res.status(200).send({ data: card });
+    return res.status(200).send({ data: card });
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
-      next(new NotFoundError('Карточка по переданному Id не найдена'));
+      return next(new NotFoundError('Карточка по переданному Id не найдена'));
     }
     if (err.name === 'CastError' || 'ValidationError') {
-      next(new ValidationError('Переданы некорректные данные в метод'));
+      return next(new ValidationError('Переданы некорректные данные в метод'));
     }
-    next(new GeneralError('Произошла ошибка'));
+    return next(new GeneralError('Произошла ошибка'));
   }
 };
