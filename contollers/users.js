@@ -62,12 +62,12 @@ module.exports.findUser = async (req, res, next) => {
     return res.status(200).send({ data: user });
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
-      return next(new NotFoundError({ message: 'Пользователь по переданному Id не найден' }));
+      return next(new NotFoundError('Пользователь по переданному Id не найден'));
     }
     if (err.name === 'CastError') {
-      return next(new ValidationError({ message: 'Переданы некорректные данные в метод' }));
+      return next(new ValidationError('Переданы некорректные данные в метод'));
     }
-    return next(new GeneralError({ message: 'Произошла ошибка' }));
+    return next(new GeneralError('Произошла ошибка'));
   }
 };
 
