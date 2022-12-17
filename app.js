@@ -11,6 +11,7 @@ const { PORT = 3000 } = process.env;
 const app = express();
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.post('/signin', celebrate({
@@ -28,7 +29,7 @@ app.post('/signup', celebrate({
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30).default('Жак-Ив Кусто'),
     about: Joi.string().min(2).max(30).default('Исследователь'),
-    avatar: Joi.string().default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png').dataUri(),
+    avatar: Joi.string().dataUri(),
   }),
 }), createUser);
 
