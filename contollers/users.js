@@ -2,6 +2,7 @@
 // файл контроллеров
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const AuthError = require('../errors/auth-err');
 const ConflictError = require('../errors/conflict-err');
 const GeneralError = require('../errors/general-err');
 const NotFoundError = require('../errors/not-found-err');
@@ -21,9 +22,9 @@ module.exports.createUser = async (req, res, next) => {
       about,
       avatar,
     });
-    res.status(201).send({ message: 'Пользователь успешно зарегистрирован' });
+    res.status(201).send({ data: `email: ${email}, name: ${name}, about: ${about}, avatar: ${avatar}` });
   } catch (err) {
-    if (err.code === 11000) {
+    if (err.code === '11000') {
       next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
     } if (err.name === 'ValidationError') {
       next(new ValidationError('Переданы некорректные данные в метод'));
@@ -39,7 +40,7 @@ module.exports.login = async (req, res, next) => {
     const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
     res.status(200).send({ token });
   } catch (err) {
-    next(new NotFoundError('Неправильные почта или пароль'));
+    next(new AuthError('Неправильные почта или пароль'));
   }
 };
 
