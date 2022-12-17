@@ -18,9 +18,8 @@ app.post('/signup', createUser);
 app.use('/users', auth, usersRoutes);
 app.use('/cards', auth, cardsRoutes);
 
-app.use((err, req, res, next) => {
-  res.status(500).send({ message: err.message });
-  next();
+app.use((err, req, res) => {
+  res.status(err.statusCode).send({ message: err.message });
 });
 
 app.all('/*', (req, res) => res.status(404).send({ message: 'Данной страницы не существует!' }));
