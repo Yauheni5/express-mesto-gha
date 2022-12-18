@@ -54,7 +54,7 @@ userSchema.statics.findUserByCredentials = async function (email, password) {
     }
     return user;
   } catch (err) {
-    return Promise.reject(new InternalServerError('Произошла ошибка'));
+    return Promise.reject(new InternalServerError());
   }
 };
 module.exports = mongoose.model('User', userSchema);

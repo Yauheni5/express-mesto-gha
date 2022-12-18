@@ -13,10 +13,6 @@ module.exports.createCard = async (req, res, next) => {
     const card = await Card.create({ name, link, owner: ownerId });
     return res.status(statusCode.OK).send({ data: card });
   } catch (err) {
-    /* if (err.name === 'CastError' || 'ValidationError') {
-      return next(new ValidationError(
-        { message: 'Переданы некорректные данные в метод создания карточки' }));
-    } */
     return next(new InternalServerError({ message: 'Произошла ошибка' }));
   }
 };
@@ -26,21 +22,18 @@ module.exports.deleteCard = async (req, res, next) => {
     const userId = req.user._id;
     const card = await Card.findById(req.params._id);
     if (!card) {
-      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+      return next(new NotFoundError());
     }
     if (card.owner.toString() === userId) {
       await Card.remove(card);
       return res.status(statusCode.OK).send({ message: `Карточка ${card.name} удалена` });
     }
-    return next(new ForbiddenError('К этой карточке у вас нет доступа на удаление'));
+    return next(new ForbiddenError());
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
-      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+      return next(new NotFoundError());
     }
-    /* if (err.name === 'CastError' || 'ValidationError') {
-      return next(new ValidationError('Переданы некорректные данные в метод'));
-    } */
-    return next(new InternalServerError('Произошла ошибка'));
+    return next(new InternalServerError());
   }
 };
 
@@ -49,7 +42,7 @@ module.exports.getCards = async (req, res, next) => {
     const card = await Card.find({});
     return res.status(statusCode.OK).send({ data: card });
   } catch (err) {
-    return next(new InternalServerError('Произошла ошибка'));
+    return next(new InternalServerError());
   }
 };
 
@@ -61,17 +54,14 @@ module.exports.likeCard = async (req, res, next) => {
       { new: true },
     );
     if (!card) {
-      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+      return next(new NotFoundError());
     }
     return res.status(statusCode.OK).send({ data: card });
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
-      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+      return next(new NotFoundError());
     }
-    /* if (err.name === 'CastError' || 'ValidationError') {
-      return next(new ValidationError('Переданы некорректные данные в метод'));
-    } */
-    return next(new InternalServerError('Произошла ошибка'));
+    return next(new InternalServerError());
   }
 };
 
@@ -83,16 +73,13 @@ module.exports.dislikeCard = async (req, res, next) => {
       { new: true },
     );
     if (!card) {
-      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+      return next(new NotFoundError());
     }
     return res.status(statusCode.OK).send({ data: card });
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
-      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+      return next(new NotFoundError());
     }
-    /*  if (err.name === 'CastError' || 'ValidationError') {
-      return next(new BadRequestError('Переданы некорректные данные в метод'));
-    } */
-    return next(new InternalServerError('Произошла ошибка'));
+    return next(new InternalServerError());
   }
 };
