@@ -7,7 +7,6 @@ const {
   ConflictError,
   BadRequestError,
   InternalServerError,
-  AuthError,
   NotFoundError,
 } = require('../errors');
 
@@ -26,8 +25,14 @@ module.exports.createUser = async (req, res, next) => {
       about,
       avatar,
     });
-    delete user.password;
-    return res.status(statusCode.Created).send({ data: user });
+    return res.status(statusCode.Created).send({
+      data: {
+        email: user.email,
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+      },
+    });
   } catch (err) {
     if (err.code === 11000) {
       return next(new ConflictError('Пользователь с таким email уже зарегистрирован'));

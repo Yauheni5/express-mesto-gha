@@ -91,9 +91,9 @@ module.exports.dislikeCard = async (req, res, next) => {
     if (err.name === 'DocumentNotFoundError') {
       return next(new NotFoundError('Карточка по переданному Id не найдена'));
     }
-    if (err.name === 'CastError' || 'ValidationError') {
+    /*  if (err.name === 'CastError' || 'ValidationError') {
       return next(new BadRequestError('Переданы некорректные данные в метод'));
-    }
+    } */
     return next(new InternalServerError('Произошла ошибка'));
   }
 };
