@@ -3,7 +3,6 @@ const bcrypt = require('bcryptjs');
 const { default: isEmail } = require('validator/lib/isEmail');
 const AuthError = require('../errors/auth-err');
 const GeneralError = require('../errors/general-err');
-const { default: isURL } = require('validator/lib/isURL');
 
 const urlRegex = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
 

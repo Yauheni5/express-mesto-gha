@@ -25,7 +25,14 @@ module.exports.createUser = async (req, res, next) => {
     if (!user) {
       return next(new ValidationError('Переданы некорректные данные в метод'));
     }
-    return res.status(201).send({ message: 'Пользователь зарегистрирован' });
+    return res.status(201).send({
+      data: {
+        email: user.email,
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+      },
+    });
   } catch (err) {
     if (err.code === 11000) {
       return next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
