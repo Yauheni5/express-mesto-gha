@@ -1,4 +1,4 @@
-const ConflictError = require('../errors/conflict-err');
+const ForbiddenErr = require('../errors/forbidden-err');
 const GeneralError = require('../errors/general-err');
 const NotFoundError = require('../errors/not-found-err');
 const ValidationError = require('../errors/validation-err');
@@ -22,14 +22,14 @@ module.exports.deleteCard = async (req, res, next) => {
   try {
     const userId = req.user._id;
     const card = await Card.findById(req.params._id);
+    if (!card) {
+      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+    }
     if (card.owner.toString() === userId) {
       await Card.findByIdAndRemove(req.params._id);
       return res.status(200).send({ message: `Карточка ${card.name} удалена` });
     }
-    if (!card) {
-      return next(new NotFoundError('Карточка по переданному Id не найдена'));
-    }
-    return next(new ConflictError('К этой карточке у вас нет доступа на удаление'));
+    return next(new ForbiddenErr('К этой карточке у вас нет доступа на удаление'));
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
       return next(new NotFoundError('Карточка по переданному Id не найдена'));
