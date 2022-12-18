@@ -23,8 +23,11 @@ module.exports.deleteCard = async (req, res, next) => {
     const userId = req.user._id;
     const card = await Card.findById(req.params._id);
     if (card.owner.toString() === userId) {
-      Card.findByIdAndRemove(req.params._id);
+      await Card.findByIdAndRemove(req.params._id);
       return res.status(200).send({ message: `Карточка ${card.name} удалена` });
+    }
+    if (!card) {
+      return next(new NotFoundError('Карточка по переданному Id не найдена'));
     }
     return next(new ConflictError('К этой карточке у вас нет доступа на удаление'));
   } catch (err) {
@@ -53,6 +56,9 @@ module.exports.likeCard = async (req, res, next) => {
       { $addToSet: { likes: req.user._id } },
       { new: true },
     );
+    if (!card) {
+      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+    }
     return res.status(200).send({ data: card });
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
@@ -72,6 +78,9 @@ module.exports.dislikeCard = async (req, res, next) => {
       { $pull: { likes: req.user._id } }, // убрать _id из массива
       { new: true },
     );
+    if (!card) {
+      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+    }
     return res.status(200).send({ data: card });
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
