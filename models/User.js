@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { default: isEmail } = require('validator/lib/isEmail');
-const AuthError = require('../errors/auth-err');
-const GeneralError = require('../errors/general-err');
 const { urlRegex } = require('../constants/constants');
+const { AuthError, InternalServerError } = require('../errors');
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -18,7 +17,6 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: 8,
     select: false,
   },
   name: {
@@ -56,7 +54,7 @@ userSchema.statics.findUserByCredentials = async function (email, password) {
     }
     return user;
   } catch (err) {
-    return new GeneralError('Произошла ошибка');
+    return Promise.reject(new InternalServerError('Произошла ошибка'));
   }
 };
 module.exports = mongoose.model('User', userSchema);
