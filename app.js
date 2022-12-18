@@ -20,7 +20,7 @@ app.post('/signin', celebrate({
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().dataUri(),
+    avatar: Joi.string(),
   }),
 }), login);
 app.post('/signup', celebrate({
@@ -29,19 +29,20 @@ app.post('/signup', celebrate({
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30).default('Жак-Ив Кусто'),
     about: Joi.string().min(2).max(30).default('Исследователь'),
-    avatar: Joi.string().dataUri(),
+    avatar: Joi.string(),
   }),
 }), createUser);
 
 app.use('/users', auth, usersRoutes);
 app.use('/cards', auth, cardsRoutes);
 
-app.use((err, req, res) => {
+app.use(errors());
+app.use((err, req, res, next) => {
   res.status(err.statusCode).send({ message: err.message });
+  next(err);
 });
 
 app.all('/*', (req, res) => res.status(404).send({ message: 'Данной страницы не существует!' }));
-app.use(errors());
 
 app.listen(PORT, () => {
   // Если всё работает, консоль покажет, какой порт приложение слушает
