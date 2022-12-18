@@ -1,7 +1,6 @@
 const Card = require('../models/Card');
 const { statusCode } = require('../constants/constants');
 const {
-  BadRequestError,
   InternalServerError,
   NotFoundError,
   ForbiddenError,
@@ -30,7 +29,7 @@ module.exports.deleteCard = async (req, res, next) => {
       return next(new NotFoundError('Карточка по переданному Id не найдена'));
     }
     if (card.owner.toString() === userId) {
-      await Card.remove(req.params._id);
+      await Card.remove(card);
       return res.status(statusCode.OK).send({ message: `Карточка ${card.name} удалена` });
     }
     return next(new ForbiddenError('К этой карточке у вас нет доступа на удаление'));
