@@ -1,20 +1,19 @@
-const ForbiddenErr = require('../errors/forbidden-err');
-const GeneralError = require('../errors/general-err');
-const NotFoundError = require('../errors/not-found-err');
-const ValidationError = require('../errors/validation-err');
 const Card = require('../models/Card');
+const { statusCode } = require('../constants/constants');
+const {
+  InternalServerError,
+  NotFoundError,
+  ForbiddenError,
+} = require('../errors');
 
 module.exports.createCard = async (req, res, next) => {
   try {
     const ownerId = req.user._id;
     const { name, link } = req.body;
     const card = await Card.create({ name, link, owner: ownerId });
-    return res.status(200).send({ data: card });
+    return res.status(statusCode.OK).send({ data: card });
   } catch (err) {
-    if (err.name === 'CastError' || 'ValidationError') {
-      return next(new ValidationError({ message: 'Переданы некорректные данные в метод создания карточки' }));
-    }
-    return next(new GeneralError({ message: 'Произошла ошибка' }));
+    return next(new InternalServerError({ message: 'Произошла ошибка' }));
   }
 };
 
@@ -23,29 +22,27 @@ module.exports.deleteCard = async (req, res, next) => {
     const userId = req.user._id;
     const card = await Card.findById(req.params._id);
     if (!card) {
-      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+      return next(new NotFoundError());
     }
     if (card.owner.toString() === userId) {
-      await Card.findByIdAndRemove(req.params._id);
-      return res.status(200).send({ message: `Карточка ${card.name} удалена` });
+      await Card.remove(card);
+      return res.status(statusCode.OK).send({ message: `Карточка ${card.name} удалена` });
     }
-    return next(new ForbiddenErr('К этой карточке у вас нет доступа на удаление'));
+    return next(new ForbiddenError());
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
-      return next(new NotFoundError('Карточка по переданному Id не найдена'));
-    } if (err.name === 'CastError' || 'ValidationError') {
-      return next(new ValidationError('Переданы некорректные данные в метод'));
+      return next(new NotFoundError());
     }
-    return next(new GeneralError('Произошла ошибка'));
+    return next(new InternalServerError());
   }
 };
 
 module.exports.getCards = async (req, res, next) => {
   try {
     const card = await Card.find({});
-    return res.status(200).send({ data: card });
+    return res.status(statusCode.OK).send({ data: card });
   } catch (err) {
-    return next(new GeneralError('Произошла ошибка'));
+    return next(new InternalServerError());
   }
 };
 
@@ -57,17 +54,14 @@ module.exports.likeCard = async (req, res, next) => {
       { new: true },
     );
     if (!card) {
-      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+      return next(new NotFoundError());
     }
-    return res.status(200).send({ data: card });
+    return res.status(statusCode.OK).send({ data: card });
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
-      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+      return next(new NotFoundError());
     }
-    if (err.name === 'CastError' || 'ValidationError') {
-      return next(new ValidationError('Переданы некорректные данные в метод'));
-    }
-    return next(new GeneralError('Произошла ошибка'));
+    return next(new InternalServerError());
   }
 };
 
@@ -79,16 +73,13 @@ module.exports.dislikeCard = async (req, res, next) => {
       { new: true },
     );
     if (!card) {
-      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+      return next(new NotFoundError());
     }
-    return res.status(200).send({ data: card });
+    return res.status(statusCode.OK).send({ data: card });
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
-      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+      return next(new NotFoundError());
     }
-    if (err.name === 'CastError' || 'ValidationError') {
-      return next(new ValidationError('Переданы некорректные данные в метод'));
-    }
-    return next(new GeneralError('Произошла ошибка'));
+    return next(new InternalServerError());
   }
 };

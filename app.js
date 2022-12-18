@@ -6,6 +6,7 @@ const cardsRoutes = require('./routes/cards');
 const { login, createUser } = require('./contollers/users');
 const auth = require('./middlewares/auth');
 const { urlRegex } = require('./constants/constants');
+const { NotFoundError } = require('./errors');
 
 const { PORT = 3000 } = process.env;
 
@@ -19,9 +20,6 @@ app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(urlRegex),
   }),
 }), login);
 app.post('/signup', celebrate({
@@ -37,13 +35,13 @@ app.post('/signup', celebrate({
 app.use('/users', auth, usersRoutes);
 app.use('/cards', auth, cardsRoutes);
 
+app.all('/*', (req, res, next) => next(new NotFoundError('Данной страницы не существует!')));
+
 app.use(errors());
 app.use((err, req, res, next) => {
-  res.status(err.statusCode).send({ message: err.message });
+  res.status(err.statusCode || 500).send({ message: err.message || 'Произошла ошибка' });
   next(err);
 });
-
-app.all('/*', (req, res) => res.status(404).send({ message: 'Данной страницы не существует!' }));
 
 app.listen(PORT, () => {
   // Если всё работает, консоль покажет, какой порт приложение слушает

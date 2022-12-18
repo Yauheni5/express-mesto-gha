@@ -2,11 +2,14 @@
 // файл контроллеров
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const AuthError = require('../errors/auth-err');
-const ConflictError = require('../errors/conflict-err');
-const GeneralError = require('../errors/general-err');
-const NotFoundError = require('../errors/not-found-err');
-const ValidationError = require('../errors/validation-err');
+const { statusCode } = require('../constants/constants');
+const {
+  ConflictError,
+  BadRequestError,
+  InternalServerError,
+  NotFoundError,
+} = require('../errors');
+
 const User = require('../models/User');
 
 module.exports.createUser = async (req, res, next) => {
@@ -22,8 +25,7 @@ module.exports.createUser = async (req, res, next) => {
       about,
       avatar,
     });
-    console.log(user);
-    return res.status(201).send({
+    return res.status(statusCode.Created).send({
       data: {
         email: user.email,
         name: user.name,
@@ -35,9 +37,9 @@ module.exports.createUser = async (req, res, next) => {
     if (err.code === 11000) {
       return next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
     } if (err.name === 'ValidationError') {
-      return next(new ValidationError('Переданы некорректные данные в метод'));
+      return next(new BadRequestError());
     }
-    return next(new GeneralError('Произошла ошибка'));
+    return next(new InternalServerError());
   }
 };
 
@@ -46,21 +48,18 @@ module.exports.login = async (req, res, next) => {
     const { email, password } = req.body;
     const user = await User.findUserByCredentials(email, password);
     const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
-    return res.status(200).send({ token });
+    return res.status(statusCode.OK).send({ token });
   } catch (err) {
-    return next(new AuthError('Неправильные почта или пароль'));
+    return next(err);
   }
 };
 
 module.exports.getUserInfo = async (req, res, next) => {
   try {
     const user = await User.findOne({ _id: req.user._id });
-    return res.status(200).send({ data: user });
+    return res.status(statusCode.OK).send({ data: user });
   } catch (err) {
-    if (err.name === 'CastError') {
-      return next(new NotFoundError('Переданы некорректные данные в метод'));
-    }
-    return next(new GeneralError('Произошла ошибка'));
+    return next(new InternalServerError());
   }
 };
 
@@ -68,26 +67,23 @@ module.exports.findUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params._id);
     if (!user) {
-      return next(new NotFoundError('Пользователь по переданному Id не найден'));
+      return next(new NotFoundError());
     }
-    return res.status(200).send({ data: user });
+    return res.status(statusCode.OK).send({ data: user });
   } catch (err) {
-    if (err.name === 'DocumentNotFoundError') {
-      return next(new NotFoundError('Пользователь по переданному Id не найден'));
-    }
     if (err.name === 'CastError') {
-      return next(new ValidationError('Переданы некорректные данные в метод'));
+      return next(new BadRequestError());
     }
-    return next(new GeneralError('Произошла ошибка'));
+    return next(new InternalServerError());
   }
 };
 
 module.exports.getUsers = async (req, res, next) => {
   try {
     const user = await User.find({});
-    return res.status(200).send({ data: user });
+    return res.status(statusCode.OK).send({ data: user });
   } catch (err) {
-    return next(new GeneralError('Произошла ошибка'));
+    return next(new InternalServerError());
   }
 };
 
@@ -100,15 +96,9 @@ module.exports.updateProfile = async (req, res, next) => {
       { name, about },
       { new: true, runValidators: true },
     );
-    return res.status(200).send({ data: user });
+    return res.status(statusCode.OK).send({ data: user });
   } catch (err) {
-    if (err.name === 'DocumentNotFoundError') {
-      return next(new NotFoundError('Пользователь по переданному Id не найден'));
-    }
-    if (err.name === 'CastError' || 'ValidationError') {
-      return next(new ValidationError('Переданы некорректные данные в метод обновления пользователя'));
-    }
-    return next(new GeneralError('Произошла ошибка'));
+    return next(new InternalServerError());
   }
 };
 
@@ -121,14 +111,8 @@ module.exports.updateAvatar = async (req, res, next) => {
       { avatar },
       { new: true, runValidators: true },
     );
-    return res.status(200).send({ data: user });
+    return res.status(statusCode.OK).send({ data: user });
   } catch (err) {
-    if (err.name === 'DocumentNotFoundError') {
-      return next(new NotFoundError('Пользователь по переданному Id не найден'));
-    }
-    if (err.name === 'CastError' || 'ValidationError') {
-      return next(new ValidationError('Переданы некорректные данные в метод обновления аватара'));
-    }
-    return next(new GeneralError('Произошла ошибка'));
+    return next(new InternalServerError());
   }
 };
