@@ -69,6 +69,7 @@ module.exports.findUser = async (req, res, next) => {
     const user = await User.findById(req.params._id);
     return res.status(200).send({ data: user });
   } catch (err) {
+    console.log(err.name);
     if (err.name === 'DocumentNotFoundError') {
       return next(new NotFoundError('Пользователь по переданному Id не найден'));
     }

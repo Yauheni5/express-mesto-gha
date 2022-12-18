@@ -19,10 +19,22 @@ cardsRoutes.post('/', celebrate({
   }),
 }), createCard);
 
-cardsRoutes.delete('/:_id', deleteCard);
+cardsRoutes.delete('/:_id', celebrate({
+  params: Joi.object().keys({
+    _id: Joi.string().required().hex().length(24),
+  }),
+}), deleteCard);
 
-cardsRoutes.put('/:_id/likes', likeCard);
+cardsRoutes.put('/:_id/likes', celebrate({
+  params: Joi.object().keys({
+    _id: Joi.string().required().hex().length(24),
+  }),
+}), likeCard);
 
-cardsRoutes.delete('/:_id/likes', dislikeCard);
+cardsRoutes.delete('/:_id/likes', celebrate({
+  params: Joi.object().keys({
+    _id: Joi.string().required().hex().length(24),
+  }),
+}), dislikeCard);
 
 module.exports = cardsRoutes;
