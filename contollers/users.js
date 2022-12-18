@@ -67,9 +67,11 @@ module.exports.getUserInfo = async (req, res, next) => {
 module.exports.findUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params._id);
+    if (!user) {
+      return next(new NotFoundError('Пользователь по переданному Id не найден'));
+    }
     return res.status(200).send({ data: user });
   } catch (err) {
-    console.log(err.name);
     if (err.name === 'DocumentNotFoundError') {
       return next(new NotFoundError('Пользователь по переданному Id не найден'));
     }
@@ -104,7 +106,7 @@ module.exports.updateProfile = async (req, res, next) => {
       return next(new NotFoundError('Пользователь по переданному Id не найден'));
     }
     if (err.name === 'CastError' || 'ValidationError') {
-      return next(new ValidationError('Переданы некорректные данные в метод обновления аватара'));
+      return next(new ValidationError('Переданы некорректные данные в метод обновления пользователя'));
     }
     return next(new GeneralError('Произошла ошибка'));
   }
