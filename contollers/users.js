@@ -57,6 +57,9 @@ module.exports.login = async (req, res, next) => {
 module.exports.getUserInfo = async (req, res, next) => {
   try {
     const user = await User.findOne({ _id: req.user._id });
+    if (!user) {
+      return next(new NotFoundError());
+    }
     return res.status(statusCode.OK).send({ data: user });
   } catch (err) {
     return next(new InternalServerError());
@@ -96,6 +99,9 @@ module.exports.updateProfile = async (req, res, next) => {
       { name, about },
       { new: true, runValidators: true },
     );
+    if (!user) {
+      return next(new NotFoundError());
+    }
     return res.status(statusCode.OK).send({ data: user });
   } catch (err) {
     return next(new InternalServerError());
@@ -111,6 +117,9 @@ module.exports.updateAvatar = async (req, res, next) => {
       { avatar },
       { new: true, runValidators: true },
     );
+    if (!user) {
+      return next(new NotFoundError());
+    }
     return res.status(statusCode.OK).send({ data: user });
   } catch (err) {
     return next(new InternalServerError());
