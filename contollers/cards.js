@@ -1,90 +1,94 @@
+const ForbiddenErr = require('../errors/forbidden-err');
+const GeneralError = require('../errors/general-err');
+const NotFoundError = require('../errors/not-found-err');
+const ValidationError = require('../errors/validation-err');
 const Card = require('../models/Card');
 
-module.exports.createCard = (req, res) => {
-  const ownerId = req.user._id;
-  const { name, link } = req.body;
-
-  Card.create({ name, link, owner: ownerId })
-    .then((card) => {
-      res.status(200).send({ data: card });
-    })
-    .catch((err) => {
-      if (err.name === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные в метод создания карточки' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+module.exports.createCard = async (req, res, next) => {
+  try {
+    const ownerId = req.user._id;
+    const { name, link } = req.body;
+    const card = await Card.create({ name, link, owner: ownerId });
+    return res.status(200).send({ data: card });
+  } catch (err) {
+    if (err.name === 'CastError' || 'ValidationError') {
+      return next(new ValidationError({ message: 'Переданы некорректные данные в метод создания карточки' }));
+    }
+    return next(new GeneralError({ message: 'Произошла ошибка' }));
+  }
 };
 
-module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params._id)
-    .orFail()
-    .then((card) => {
-      if (card) {
-        res.status(200).send({ data: card });
-      }
-      next();
-    })
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        next(res.status(404).send({ message: 'Карточка по переданному Id не найдена' }));
-      } else if (err.name === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные в метод' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+module.exports.deleteCard = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const card = await Card.findById(req.params._id);
+    if (!card) {
+      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+    }
+    if (card.owner.toString() === userId) {
+      await Card.findByIdAndRemove(req.params._id);
+      return res.status(200).send({ message: `Карточка ${card.name} удалена` });
+    }
+    return next(new ForbiddenErr('К этой карточке у вас нет доступа на удаление'));
+  } catch (err) {
+    if (err.name === 'DocumentNotFoundError') {
+      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+    } if (err.name === 'CastError' || 'ValidationError') {
+      return next(new ValidationError('Переданы некорректные данные в метод'));
+    }
+    return next(new GeneralError('Произошла ошибка'));
+  }
 };
 
-module.exports.getCards = (req, res) => {
-  Card.find({})
-    .then((card) => res.status(200).send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+module.exports.getCards = async (req, res, next) => {
+  try {
+    const card = await Card.find({});
+    return res.status(200).send({ data: card });
+  } catch (err) {
+    return next(new GeneralError('Произошла ошибка'));
+  }
 };
 
-module.exports.likeCard = (req, res, next) => {
-  Card.findByIdAndUpdate(
-    req.params._id,
-    { $addToSet: { likes: req.user._id } },
-    { new: true },
-  )
-    .orFail()
-    .then((card) => {
-      if (card) {
-        res.status(200).send({ data: card });
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        next(res.status(404).send({ message: 'Данные по переданному Id не найдены' }));
-      } else if (err.name === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные для постановки лайка' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+module.exports.likeCard = async (req, res, next) => {
+  try {
+    const card = await Card.findByIdAndUpdate(
+      req.params._id,
+      { $addToSet: { likes: req.user._id } },
+      { new: true },
+    );
+    if (!card) {
+      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+    }
+    return res.status(200).send({ data: card });
+  } catch (err) {
+    if (err.name === 'DocumentNotFoundError') {
+      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+    }
+    if (err.name === 'CastError' || 'ValidationError') {
+      return next(new ValidationError('Переданы некорректные данные в метод'));
+    }
+    return next(new GeneralError('Произошла ошибка'));
+  }
 };
 
-module.exports.dislikeCard = (req, res, next) => {
-  Card.findByIdAndUpdate(
-    req.params._id,
-    { $pull: { likes: req.user._id } }, // убрать _id из массива
-    { new: true },
-  )
-    .orFail()
-    .then((card) => {
-      if (card) {
-        res.status(200).send({ data: card });
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        next(res.status(404).send({ message: 'Данные по переданному Id не найдены' }));
-      } else if (err.name === 'CastError' || 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные для снятия лайка' });
-      } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+module.exports.dislikeCard = async (req, res, next) => {
+  try {
+    const card = await Card.findByIdAndUpdate(
+      req.params._id,
+      { $pull: { likes: req.user._id } }, // убрать _id из массива
+      { new: true },
+    );
+    if (!card) {
+      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+    }
+    return res.status(200).send({ data: card });
+  } catch (err) {
+    if (err.name === 'DocumentNotFoundError') {
+      return next(new NotFoundError('Карточка по переданному Id не найдена'));
+    }
+    if (err.name === 'CastError' || 'ValidationError') {
+      return next(new ValidationError('Переданы некорректные данные в метод'));
+    }
+    return next(new GeneralError('Произошла ошибка'));
+  }
 };
