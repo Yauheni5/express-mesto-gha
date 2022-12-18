@@ -22,9 +22,7 @@ module.exports.createUser = async (req, res, next) => {
       about,
       avatar,
     });
-    if (!user) {
-      return next(new ValidationError('Переданы некорректные данные в метод'));
-    }
+    console.log(user);
     return res.status(201).send({
       data: {
         email: user.email,
