@@ -40,7 +40,7 @@ module.exports.deleteCard = async (req, res, next) => {
 module.exports.getCards = async (req, res, next) => {
   try {
     const card = await Card.find({});
-    card.populate('owner', 'likes');
+    card.populate(['owner', 'likes']);
     return res.status(statusCode.OK).send({ data: card });
   } catch (err) {
     return next(new InternalServerError());
@@ -57,7 +57,7 @@ module.exports.likeCard = async (req, res, next) => {
     if (!card) {
       return next(new NotFoundError());
     }
-    card.populate('owner', 'likes');
+    card.populate(['owner', 'likes']);
     return res.status(statusCode.OK).send({ data: card });
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
@@ -77,7 +77,7 @@ module.exports.dislikeCard = async (req, res, next) => {
     if (!card) {
       return next(new NotFoundError());
     }
-    card.populate('owner', 'likes');
+    card.populate(['owner', 'likes']);
     return res.status(statusCode.OK).send({ data: card });
   } catch (err) {
     if (err.name === 'DocumentNotFoundError') {
