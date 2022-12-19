@@ -39,7 +39,9 @@ app.all('/*', (req, res, next) => next(new NotFoundError('Данной стра�
 
 app.use(errors());
 app.use((err, req, res, next) => {
-  res.status(err.statusCode || 500).send({ message: (err.statusCode === 500) ? 'Произошла ошибка' : err.message });
+  const statusCode = err.statusCode || 500;
+  const message = (err.statusCode === 500) ? 'Произошла ошибка' : err.message;
+  res.status(statusCode).send({ message });
   next(err);
 });
 
